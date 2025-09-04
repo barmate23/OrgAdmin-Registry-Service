@@ -2,14 +2,14 @@ name: Publish Docker image to GHCR
 
 on:
   push:
-    branches: [ "main" ]   # change if you use master or another branch
+    branches: [ "main" ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      packages: write   # allow pushing to GHCR
+      packages: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -21,9 +21,14 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Set lowercase repo name
+        id: prep
+        run: |
+          echo "repo_lower=$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
       - name: Build and Push Docker image
         uses: docker/build-push-action@v4
         with:
           context: .
           push: true
-          tags: ghcr.io/${{ github.repository }}:latest
+          tags: ghcr.io/${{ env.repo_lower }}:latest
